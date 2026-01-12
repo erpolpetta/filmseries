@@ -7,61 +7,37 @@
   <link rel="stylesheet" href="style.css">
 </head>
 <body>
-  <!-- ==============================
-       HEADER
-       ============================== -->
   <header>
-    <h1>🎬 Consigli Film & Serie</h1>
-    <p>Inserisci un titolo per ricevere 5 consigli famosi e 5 consigli di nicchia</p>
+    <h1>Consigli Film & Serie</h1>
   </header>
 
   <main>
-    <!-- ==============================
-         INPUT TITOLO
-         ============================== -->
+    <!-- Input Titolo e Autocomplete -->
     <section id="ricerca">
-      <input type="text" id="titoloInput" placeholder="Scrivi il titolo del film/serie...">
+      <input type="text" id="titoloInput" placeholder="Scrivi il titolo di film o serie...">
       <button id="consigliaBtn">Consigliami</button>
+      <button onclick="consigliCasuali()">Consigli Casuali</button>
     </section>
 
-    <!-- ==============================
-         CONSIGLI FAMOSI
-         ============================== -->
-    <section id="consigliFamosi">
-      <h2>🎯 Consigli Famosi</h2>
-      <div id="listaFamosi">
-        <!-- I consigli famosi compariranno qui -->
-      </div>
+    <!-- Consigli Famosi -->
+    <section>
+      <h2>Consigli Famosi</h2>
+      <div id="listaFamosi"></div>
     </section>
 
-    <!-- ==============================
-         CONSIGLI DI NICCHIA
-         ============================== -->
-    <section id="consigliNicchia">
-      <h2>⏳ Consigli di Nicchia</h2>
-      <div id="listaNicchia">
-        <!-- I consigli di nicchia compariranno qui -->
-      </div>
+    <!-- Consigli di Nicchia -->
+    <section>
+      <h2>Consigli di Nicchia</h2>
+      <div id="listaNicchia"></div>
     </section>
 
-    <!-- ==============================
-         ARCHIVIO VISTI
-         ============================== -->
-    <section id="archivioVisti">
-      <h2>✔ Visti</h2>
-      <ul id="listaVisti">
-        <!-- Film/serie visti -->
-      </ul>
-    </section>
+    <!-- Archivio Cose Viste e Consigliati -->
+    <section id="archivi">
+      <h3>Cose Viste</h3>
+      <ul id="listaVisti"></ul>
 
-    <!-- ==============================
-         ARCHIVIO CONSIGLIATI
-         ============================== -->
-    <section id="archivioConsigliati">
-      <h2>⏳ Consigliati</h2>
-      <ul id="listaConsigliati">
-        <!-- Film/serie consigliati -->
-      </ul>
+      <h3>Consigliati</h3>
+      <ul id="listaConsigliati"></ul>
     </section>
   </main>
 
