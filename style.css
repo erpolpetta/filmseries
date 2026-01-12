@@ -2,38 +2,49 @@
    STYLE.CSS - Consigli Film & Serie
    ============================== */
 
-/* Stile generale */
+/* BACKGROUND GLOBALE */
 body {
-  background-color: #121212;
+  background: linear-gradient(
+      rgba(0, 0, 0, 0.55),
+      rgba(0, 0, 0, 0.55)
+    ),
+    url('https://imgs.search.brave.com/B7k9oUx7HAiEjI1CgKJDzG-vvoVMDpBLKf3-Q6jN8Qg/rs:fit:860:0:0:0/g:ce/aHR0cHM6Ly9pbWFn/ZXMud2FsbHBhcGVy/c2Rlbi5jb20vaW1h/Z2Uvd3Mtb21uaS1t/YW4taW52aW5jYmxl/LXNlYXNvbi0yXzkxNjE0LmpwZw')
+      center/cover no-repeat fixed;
   color: #ffffff;
   font-family: 'Arial', sans-serif;
   margin: 0;
   padding: 0;
 }
 
+/* HEADER */
 header {
-  background-color: #ffffff;
+  background: rgba(255, 255, 255, 0.9);
   color: #121212;
   text-align: center;
-  padding: 20px 0;
+  padding: 25px 0;
 }
 
 h1 {
-  font-size: 3rem;
+  font-size: 2.8rem;
   margin: 0;
 }
 
+/* LAYOUT PRINCIPALE */
 main {
   padding: 20px;
-  max-width: 900px;
+  max-width: 960px;
   margin: auto;
 }
 
 section {
   margin-bottom: 30px;
+  background: rgba(30, 30, 30, 0.85);
+  padding: 15px 20px;
+  border-radius: 8px;
+  border: 1px solid #444;
 }
 
-/* Input e bottoni */
+/* INPUT E PULSANTI */
 #ricerca {
   display: flex;
   flex-wrap: wrap;
@@ -43,106 +54,147 @@ section {
 
 #titoloInput {
   flex: 1;
-  padding: 10px;
-  border-radius: 5px;
+  padding: 12px;
+  border-radius: 6px;
   border: 1px solid #444;
-  background-color: #1e1e1e;
+  background-color: #222;
   color: #fff;
+  font-size: 1rem;
 }
 
-#consigliaBtn, #ricerca button {
+#consigliaBtn,
+#ricerca button {
   padding: 10px 15px;
   background-color: #FFD700; /* giallo */
   color: #121212;
   border: none;
-  border-radius: 5px;
+  border-radius: 6px;
+  font-weight: bold;
   cursor: pointer;
-  transition: transform 0.2s;
+  transition: transform 0.2s, background-color 0.2s;
 }
 
-#consigliaBtn:hover, #ricerca button:hover {
+#consigliaBtn:hover,
+#ricerca button:hover {
+  background-color: #ffea70;
   transform: scale(1.05);
 }
 
-/* Autocomplete */
+/* AUTOCOMPLETE */
 #titoloInput + div {
-  max-height: 200px;
+  max-height: 220px;
   overflow-y: auto;
   border: 1px solid #444;
-  background-color: #1e1e1e;
+  background-color: rgba(20, 20, 20, 0.95);
   position: absolute;
-  z-index: 999;
-  width: calc(100% - 22px);
+  z-index: 9999;
+  width: calc(100% - 24px);
+  border-radius: 6px;
 }
 
 #titoloInput + div div {
   display: flex;
   align-items: center;
-  padding: 5px;
+  justify-content: space-between; /* locandina a destra */
   cursor: pointer;
+  padding: 5px 8px;
+  gap: 10px;
 }
 
 #titoloInput + div div:hover {
-  background-color: #333;
+  background-color: rgba(50, 50, 50, 0.8);
 }
 
-/* Card consigli */
-#listaFamosi div, #listaNicchia div {
-  border: 1px solid #444;
-  padding: 10px;
-  margin-bottom: 10px;
-  border-radius: 5px;
-  transition: opacity 0.5s, transform 0.3s;
-  background-color: #1e1e1e;
+#titoloInput + div img {
+  width: 40px;
+  border-radius: 4px;
+  order: 1; /* forza a destra */
+  margin-left: 10px;
+}
+#titoloInput + div span {
+  flex: 1;
+  order: 0; /* titolo a sinistra */
+  min-width: 150px;
 }
 
-#listaFamosi div:hover, #listaNicchia div:hover {
+/* CARD CONSIGLI */
+#listaFamosi div,
+#listaNicchia div {
+  border: 1px solid #555;
+  padding: 12px;
+  margin-bottom: 12px;
+  border-radius: 6px;
+  background: rgba(25, 25, 25, 0.85);
+  transition: transform 0.3s, background 0.3s;
+}
+
+#listaFamosi div:hover,
+#listaNicchia div:hover {
   transform: scale(1.02);
+  background: rgba(35, 35, 35, 0.9);
 }
 
-/* Immagini nelle card */
-#listaFamosi img, #listaNicchia img {
+#listaFamosi img,
+#listaNicchia img {
   width: 150px;
   float: left;
   margin-right: 10px;
+  border-radius: 4px;
 }
 
-/* Pulsanti dentro le card */
-.vistoBtn, .daVedereBtn {
-  padding: 5px 10px;
-  margin-right: 5px;
+/* PULSANTI DENTRO LE CARD */
+.vistoBtn,
+.daVedereBtn {
+  padding: 6px 10px;
+  margin-top: 8px;
+  margin-right: 6px;
   background-color: #FFD700;
   color: #121212;
   border: none;
   border-radius: 5px;
   cursor: pointer;
+  font-size: 0.9rem;
 }
 
-.vistoBtn:hover, .daVedereBtn:hover {
-  transform: scale(1.05);
+.vistoBtn:hover,
+.daVedereBtn:hover {
+  background-color: #ffea70;
+  transform: scale(1.04);
 }
 
-/* Stelle di pertinenza */
+/* STELLE DI PERTINENZA */
 p.stelle {
-  font-size: 1.2rem;
+  font-size: 1.3rem;
   color: gold;
-  margin: 5px 0;
+  margin: 6px 0;
+  font-weight: bold;
 }
 
-/* Sezioni archivi */
+/* ARCHIVI */
 #archivi ul {
   list-style: none;
   padding-left: 0;
 }
 
 #archivi li {
-  padding: 5px 0;
+  padding: 6px 0;
   border-bottom: 1px solid #444;
 }
 
-/* Pulizia float */
+/* PULIZIA FLOAT */
 .clearfix::after {
   content: "";
   display: table;
   clear: both;
+}
+
+/* RESPONSIVE */
+@media (max-width: 600px) {
+  #titoloInput {
+    width: 100%;
+  }
+  #ricerca {
+    flex-direction: column;
+    gap: 8px;
+  }
 }
