@@ -1,5 +1,5 @@
 /* ==============================
-   SCRIPT.JS - Consigli Film & Serie Corretto
+   SCRIPT.JS - Consigli Film & Serie
    ============================== */
 
 const apiKey = "2d3cf36a009fccd04e0537124889559f";
@@ -107,14 +107,21 @@ inputTitolo.addEventListener("input", async () => {
     const item = document.createElement("div");
     item.style.display = "flex";
     item.style.alignItems = "center";
+    item.style.justifyContent = "space-between"; // locandina a destra
     item.style.cursor = "pointer";
-    item.style.padding = "5px";
-    item.innerHTML = `${poster ? `<img src="${poster}" alt="${titolo}">` : ""}<span>${titolo}</span>`;
+    item.style.padding = "5px 8px";
+    item.style.gap = "10px";
+    item.innerHTML = `
+      <span>${titolo}</span>
+      ${poster ? `<img src="${poster}" alt="${titolo}">` : ""}
+    `;
 
     item.addEventListener("click", () => {
       inputTitolo.value = titolo;
       inputTitolo.dataset.selectedId = film.id;
+      inputTitolo.dataset.mediaType = film.media_type; // salva il tipo
       autocompleteContainer.innerHTML = "";
+      generaConsigli(); // genera consigli subito
     });
 
     autocompleteContainer.appendChild(item);
@@ -135,16 +142,22 @@ async function generaConsigli() {
   }
 
   let filmSelezionato;
+
   try {
+    let url;
     if (inputTitolo.dataset.selectedId) {
-      const url = `https://api.themoviedb.org/3/movie/${inputTitolo.dataset.selectedId}?api_key=${apiKey}&language=it-IT`;
+      if (inputTitolo.dataset.mediaType === "tv") {
+        url = `https://api.themoviedb.org/3/tv/${inputTitolo.dataset.selectedId}?api_key=${apiKey}&language=it-IT`;
+      } else {
+        url = `https://api.themoviedb.org/3/movie/${inputTitolo.dataset.selectedId}?api_key=${apiKey}&language=it-IT`;
+      }
       const resp = await fetch(url);
       filmSelezionato = await resp.json();
     } else {
-      const url = `https://api.themoviedb.org/3/search/multi?api_key=${apiKey}&language=it-IT&query=${encodeURIComponent(titoloInserito)}`;
-      const resp = await fetch(url);
+      // Cerca tramite multi-search se non ha cliccato autocomplete
+      const urlSearch = `https://api.themoviedb.org/3/search/multi?api_key=${apiKey}&language=it-IT&query=${encodeURIComponent(titoloInserito)}`;
+      const resp = await fetch(urlSearch);
       const data = await resp.json();
-      // filtro solo movie/tv
       const risultati = (data.results || []).filter(f => f.media_type === "movie" || f.media_type === "tv");
       if (risultati.length === 0) {
         alert("Titolo non trovato su TMDb.");
@@ -152,34 +165,50 @@ async function generaConsigli() {
       }
       filmSelezionato = risultati[0];
     }
+
+    if (!filmSelezionato.genre_ids) filmSelezionato.genre_ids = [];
+
   } catch (err) {
     console.error(err);
     alert("Errore nella ricerca del titolo.");
     return;
   }
 
-  const tagsSelezionati = filmSelezionato.genre_ids || [];
+  const tagsSelezionati = filmSelezionato.genre_ids;
+  if (!tagsSelezionati || tagsSelezionati.length === 0) {
+    alert("Impossibile generare consigli: nessun tag disponibile per questo titolo.");
+    return;
+  }
 
-  // Prendi consigli basati sui tag
-  const consigli = await Promise.all(tagsSelezionati.map(async g => {
+  // Recupera consigli da TMDb basati sui tag
+  const consigliPromises = tagsSelezionati.map(async g => {
     const url = `https://api.themoviedb.org/3/discover/movie?api_key=${apiKey}&with_genres=${g}&language=it-IT`;
     const resp = await fetch(url);
     const data = await resp.json();
     return data.results || [];
-  }));
+  });
 
-  let tuttiConsigli = [].concat(...consigli);
+  let tuttiConsigli = [].concat(...(await Promise.all(consigliPromises)));
   tuttiConsigli = tuttiConsigli.filter(f => f.id !== filmSelezionato.id);
+
+  // Elimina duplicati
   const uniqueConsigli = Array.from(new Map(tuttiConsigli.map(f => [f.id, f])).values());
 
-  uniqueConsigli.sort((a, b) => calcolaTagsComuni(b.genre_ids || [], tagsSelezionati) - calcolaTagsComuni(a.genre_ids || [], tagsSelezionati));
+  // Ordina per tag in comune
+  uniqueConsigli.sort((a, b) => {
+    const comuniA = calcolaTagsComuni(a.genre_ids || [], tagsSelezionati);
+    const comuniB = calcolaTagsComuni(b.genre_ids || [], tagsSelezionati);
+    return comuniB - comuniA;
+  });
 
+  // Separa famosi / nicchia
   const famosi = uniqueConsigli.filter(f => f.popularity >= 70).slice(0, 5);
   const nicchia = uniqueConsigli.filter(f => f.popularity < 70).slice(0, 5);
 
   famosi.forEach(f => creaCard(f, "listaFamosi", tagsSelezionati));
   nicchia.forEach(f => creaCard(f, "listaNicchia", tagsSelezionati));
 
+  // Aggiorna archivi
   renderArchivio("listaVisti");
   renderArchivio("listaConsigliati");
 }
