@@ -97,7 +97,6 @@ inputTitolo.addEventListener("input", async () => {
   const data = await resp.json();
   let results = data.results || [];
 
-  // Filtro solo film e serie
   results = results.filter(f => f.media_type === "movie" || f.media_type === "tv");
 
   results.slice(0, 5).forEach(film => {
@@ -107,21 +106,18 @@ inputTitolo.addEventListener("input", async () => {
     const item = document.createElement("div");
     item.style.display = "flex";
     item.style.alignItems = "center";
-    item.style.justifyContent = "space-between"; // locandina a destra
+    item.style.justifyContent = "space-between";
     item.style.cursor = "pointer";
     item.style.padding = "5px 8px";
     item.style.gap = "10px";
-    item.innerHTML = `
-      <span>${titolo}</span>
-      ${poster ? `<img src="${poster}" alt="${titolo}">` : ""}
-    `;
+    item.innerHTML = `<span>${titolo}</span>${poster ? `<img src="${poster}" alt="${titolo}">` : ""}`;
 
     item.addEventListener("click", () => {
       inputTitolo.value = titolo;
       inputTitolo.dataset.selectedId = film.id;
-      inputTitolo.dataset.mediaType = film.media_type; // salva il tipo
+      inputTitolo.dataset.mediaType = film.media_type;
       autocompleteContainer.innerHTML = "";
-      generaConsigli(); // genera consigli subito
+      generaConsigli();
     });
 
     autocompleteContainer.appendChild(item);
@@ -154,7 +150,6 @@ async function generaConsigli() {
       const resp = await fetch(url);
       filmSelezionato = await resp.json();
     } else {
-      // Cerca tramite multi-search se non ha cliccato autocomplete
       const urlSearch = `https://api.themoviedb.org/3/search/multi?api_key=${apiKey}&language=it-IT&query=${encodeURIComponent(titoloInserito)}`;
       const resp = await fetch(urlSearch);
       const data = await resp.json();
@@ -165,22 +160,33 @@ async function generaConsigli() {
       }
       filmSelezionato = risultati[0];
     }
-
-    if (!filmSelezionato.genre_ids) filmSelezionato.genre_ids = [];
-
   } catch (err) {
     console.error(err);
     alert("Errore nella ricerca del titolo.");
     return;
   }
 
-  const tagsSelezionati = filmSelezionato.genre_ids;
+  // FIX: gestione tag per film o serie
+  let tagsSelezionati = filmSelezionato.genre_ids;
+  if ((!tagsSelezionati || tagsSelezionati.length === 0) && filmSelezionato.genres) {
+    tagsSelezionati = filmSelezionato.genres.map(g => g.id);
+  }
+
+  // SE NON CI SONO TAG, genero consigli casuali basati sulla popolarità
   if (!tagsSelezionati || tagsSelezionati.length === 0) {
-    alert("Impossibile generare consigli: nessun tag disponibile per questo titolo.");
+    console.warn("Nessun tag disponibile, uso consigli casuali.");
+    const urlRandom = `https://api.themoviedb.org/3/discover/movie?api_key=${apiKey}&language=it-IT&sort_by=popularity.desc`;
+    const respRandom = await fetch(urlRandom);
+    const dataRandom = await respRandom.json();
+    const randomConsigli = getRandomElements(dataRandom.results || [], 10);
+    randomConsigli.forEach((f, i) => {
+      if (i < 5) creaCard(f, "listaFamosi", []);
+      else creaCard(f, "listaNicchia", []);
+    });
     return;
   }
 
-  // Recupera consigli da TMDb basati sui tag
+  // Consigli basati sui tag
   const consigliPromises = tagsSelezionati.map(async g => {
     const url = `https://api.themoviedb.org/3/discover/movie?api_key=${apiKey}&with_genres=${g}&language=it-IT`;
     const resp = await fetch(url);
@@ -191,24 +197,20 @@ async function generaConsigli() {
   let tuttiConsigli = [].concat(...(await Promise.all(consigliPromises)));
   tuttiConsigli = tuttiConsigli.filter(f => f.id !== filmSelezionato.id);
 
-  // Elimina duplicati
   const uniqueConsigli = Array.from(new Map(tuttiConsigli.map(f => [f.id, f])).values());
 
-  // Ordina per tag in comune
   uniqueConsigli.sort((a, b) => {
     const comuniA = calcolaTagsComuni(a.genre_ids || [], tagsSelezionati);
     const comuniB = calcolaTagsComuni(b.genre_ids || [], tagsSelezionati);
     return comuniB - comuniA;
   });
 
-  // Separa famosi / nicchia
   const famosi = uniqueConsigli.filter(f => f.popularity >= 70).slice(0, 5);
   const nicchia = uniqueConsigli.filter(f => f.popularity < 70).slice(0, 5);
 
   famosi.forEach(f => creaCard(f, "listaFamosi", tagsSelezionati));
   nicchia.forEach(f => creaCard(f, "listaNicchia", tagsSelezionati));
 
-  // Aggiorna archivi
   renderArchivio("listaVisti");
   renderArchivio("listaConsigliati");
 }
